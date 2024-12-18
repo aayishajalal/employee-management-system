@@ -8,7 +8,7 @@ import "./AddEmployee.css";
 const AddEmployee = () => {
   const handleSubmit = async (values) => {
     try {
-      const response = await axios.post("http://localhost:5000/add-employee", values);
+      const response = await axios.post("https://employee-management-system-wktk.onrender.com/add-employee", values);
       toast.success(response.data, { position: "top-right", autoClose: 3000 });
     } catch (error) {
       toast.error(error.response?.data || "An error occurred", { position: "top-right", autoClose: 3000 });

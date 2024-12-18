@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: '*'
+  origin: 'https://employee-management-system-ten-woad.vercel.app/'
 }));
 
 const db = mysql2.createConnection({
