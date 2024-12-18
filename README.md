@@ -2,7 +2,7 @@
 
 This project demonstrates how to containerize an employee form application using Docker and Docker Compose. The backend (API) and frontend (UI) are both containerized and can be run using `docker-compose` commands.
 **Frontend, Backend, DB are containerized.**
-**Frontend deployed in vercel.**
+**Frontend deployed in vercel.** https://employee-management-system-ten-woad.vercel.app/
 **Backend deployed in render.** 
 
 # Stack 
