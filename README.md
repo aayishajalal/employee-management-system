@@ -6,9 +6,9 @@ This project demonstrates how to containerize an employee form application using
 **Backend deployed in render.** 
 
 # Stack 
-React -- framework - vite
-Express.js (for backend)
-mySql (docker-image)
+- React -- framework - vite
+- Express.js (for backend)
+- mySql (docker-image)
 
 ## Setup
 
