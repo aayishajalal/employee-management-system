@@ -9,7 +9,16 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://employee-management-system-aayishajalals-projects.vercel.app",
+    "https://employee-management-system-git-main-aayishajalals-projects.vercel.app",
+    "http://localhost:80",
+    "http://localhost:5173",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"], // Allow specific HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allow specific headers
+}));
 
 const db = mysql2.createConnection({
   host: process.env.DB_HOST || "mysql",
