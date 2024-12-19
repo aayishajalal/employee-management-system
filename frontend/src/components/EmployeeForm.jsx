@@ -1,141 +1,150 @@
-import React from "react";
-import { useFormik } from "formik";
-import * as Yup from "yup";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import DatePicker from "react-datepicker"; // Import DatePicker
+import "react-datepicker/dist/react-datepicker.css"; // Import DatePicker CSS
+import { useNavigate } from 'react-router-dom'; // For navigation
 
-const EmployeeForm = ({ onSubmit }) => {
-  const formik = useFormik({
-    initialValues: {
-      name: "",
-      employeeId: "",
-      email: "",
-      phone: "",
-      department: "",
-      dateOfJoining: "",
-      role: "",
-    },
-    validationSchema: Yup.object({
-      name: Yup.string().required("Name is required"),
-      employeeId: Yup.string()
-        .max(10, "Must be 10 characters or less")
-        .required("Employee ID is required"),
-      email: Yup.string().email("Invalid email").required("Email is required"),
-      phone: Yup.string()
-        .matches(/^\d{10}$/, "Must be a valid 10-digit number")
-        .required("Phone number is required"),
-      department: Yup.string().required("Department is required"),
-      dateOfJoining: Yup.date()
-        .max(new Date(), "Cannot select a future date")
-        .required("Date of joining is required"),
-      role: Yup.string().required("Role is required"),
-    }),
-    onSubmit: onSubmit,
-  });
+// Departments array for the dropdown
+const departments = ["HR", "Engineering", "Marketing"];
+
+// Zod schema for validation
+const employeeSchema = z.object({
+  employeeId: z.string().min(1, "EmployeeId cannot be empty").max(10, "Max 10 characters"),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email format"),
+  phone: z.string().regex(/^\d{10}$/, "Must be 10 digits"),
+  department: z.string().min(1, "Department is required"),
+  dateOfJoining: z.string().refine(
+    (date) => new Date(date) <= new Date(),
+    "Cannot be a future date"
+  ),
+  role: z.string().min(1, "Role is required"),
+});
+
+const EmployeeForm = () => {
+  const navigate = useNavigate();
+  const [date, setDate] = useState(null); // State to store the selected date
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue, // To set the value of date in react-hook-form
+    formState: { errors },
+  } = useForm({ resolver: zodResolver(employeeSchema) });
+
+  const onSubmit = async (formData) => {
+    try {
+      const response = await axios.post('http://localhost:5000/add-employee', formData); // API call
+      console.log('Response:', response);
+    } catch (error) {
+      console.error('Error during API call:', error);
+    }
+  };
+
+  // Sync selected date with React Hook Form
+  const handleDateChange = (date) => {
+    setDate(date);
+    setValue("dateOfJoining", date.toISOString().split("T")[0]); // Update form value
+  };
 
   return (
-    <div className="form">
-      <h1>Add Employee</h1>
-      <form onSubmit={formik.handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="name">Name:</label>
+    <div className="max-w-xl p-6 mx-auto bg-white rounded-md shadow-md">
+      <button
+        onClick={() => navigate('/')} // Go back to homepage
+        className="flex items-center mb-6 text-blue-600"
+      >
+        ← Back to Home
+      </button>
+      
+      <h1 className="mb-6 text-3xl font-bold text-blue-600">Add Employee</h1>
+
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="mb-4">
           <input
-            type="text"
-            name="name"
-            id="name"
-            {...formik.getFieldProps("name")}
+            {...register("employeeId")}
+            placeholder="Employee ID"
+            className={`border p-3 w-full rounded ${errors.employeeId ? 'border-red-500' : ''}`}
           />
-          {formik.touched.name && formik.errors.name && (
-            <div className="error">{formik.errors.name}</div>
-          )}
+          {errors.employeeId && <p className="text-sm text-red-500">{errors.employeeId.message}</p>}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="employeeId">Employee ID:</label>
+        <div className="mb-4">
           <input
-            type="text"
-            name="employeeId"
-            id="employeeId"
-            {...formik.getFieldProps("employeeId")}
+            {...register("name")}
+            placeholder="Name"
+            className={`border p-3 w-full rounded ${errors.name ? 'border-red-500' : ''}`}
           />
-          {formik.touched.employeeId && formik.errors.employeeId && (
-            <div className="error">{formik.errors.employeeId}</div>
-          )}
+          {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="email">Email:</label>
+        <div className="mb-4">
           <input
-            type="email"
-            name="email"
-            id="email"
-            {...formik.getFieldProps("email")}
+            {...register("email")}
+            placeholder="Email"
+            className={`border p-3 w-full rounded ${errors.email ? 'border-red-500' : ''}`}
           />
-          {formik.touched.email && formik.errors.email && (
-            <div className="error">{formik.errors.email}</div>
-          )}
+          {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="phone">Phone:</label>
+        <div className="mb-4">
           <input
-            type="text"
-            name="phone"
-            id="phone"
-            {...formik.getFieldProps("phone")}
+            {...register("phone")}
+            placeholder="Phone"
+            className={`border p-3 w-full rounded ${errors.phone ? 'border-red-500' : ''}`}
           />
-          {formik.touched.phone && formik.errors.phone && (
-            <div className="error">{formik.errors.phone}</div>
-          )}
+          {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="department">Department:</label>
+        <div className="mb-4">
           <select
-            name="department"
-            id="department"
-            {...formik.getFieldProps("department")}
+            {...register("department")}
+            className={`border p-3 w-full rounded ${errors.department ? 'border-red-500' : ''}`}
           >
             <option value="">Select Department</option>
-            <option value="HR">HR</option>
-            <option value="Engineering">Engineering</option>
-            <option value="Marketing">Marketing</option>
+            {departments.map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
           </select>
-          {formik.touched.department && formik.errors.department && (
-            <div className="error">{formik.errors.department}</div>
-          )}
+          {errors.department && <p className="text-sm text-red-500">{errors.department.message}</p>}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="dateOfJoining">Date of Joining:</label>
-          <input
-            type="date"
-            name="dateOfJoining"
-            id="dateOfJoining"
-            {...formik.getFieldProps("dateOfJoining")}
+        {/* DatePicker component for Date of Joining */}
+        <div className="mb-4">
+          <DatePicker
+            selected={date}
+            onChange={handleDateChange}
+            dateFormat="yyyy-MM-dd"
+            maxDate={new Date()} // Disable future dates
+            placeholderText="Select Date"
+            className={`border p-3 w-full rounded ${errors.dateOfJoining ? 'border-red-500' : ''}`}
           />
-          {formik.touched.dateOfJoining && formik.errors.dateOfJoining && (
-            <div className="error">{formik.errors.dateOfJoining}</div>
-          )}
+          {errors.dateOfJoining && <p className="text-sm text-red-500">{errors.dateOfJoining.message}</p>}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="role">Role:</label>
+        <div className="mb-4">
           <input
-            type="text"
-            name="role"
-            id="role"
-            {...formik.getFieldProps("role")}
+            {...register("role")}
+            placeholder="Role"
+            className={`border p-3 w-full rounded ${errors.role ? 'border-red-500' : ''}`}
           />
-          {formik.touched.role && formik.errors.role && (
-            <div className="error">{formik.errors.role}</div>
-          )}
+          {errors.role && <p className="text-sm text-red-500">{errors.role.message}</p>}
         </div>
 
-        <div className="form-group">
-          <button type="submit">Submit</button>
+        <div className="flex gap-4 mb-4">
+          <button type="submit" className="w-full p-3 text-white bg-blue-500 rounded">Submit</button>
           <button
-            type="reset"
-            onClick={formik.handleReset}
-            className="reset-button"
+            type="button"
+            onClick={() => {
+              reset();
+              setDate(null); // Reset date picker
+            }}
+            className="w-full p-3 text-white bg-gray-500 rounded"
           >
             Reset
           </button>
